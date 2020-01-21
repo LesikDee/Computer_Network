@@ -8,11 +8,8 @@ random.seed(1)
 
 
 class PointToPoint:
-    _window_size: int
-    _lose_prob: float
 
-    _sender_queue: mp.Queue()
-    _receiver_queue: mp.Queue()
+    _debug = False  # if true then outputs conversation in console
 
     def __init__(self, protocol_type: str, window_size, lose_prob, transfer_number=-1, seconds=-1):
         self._lose_prob = lose_prob
@@ -52,8 +49,8 @@ class PointToPoint:
                                               args=(self._sender_queue, self._receiver_queue,
                                                     window_size, lose_prob, seconds, self.pack_number))
         if transfer_number > 0 or seconds > 0:
-            self._receiver_process = mp.Process(target=receiver['sr'],
-                                                args=(self._receiver_queue, self._sender_queue, window_size, lose_prob))
+            self._receiver_process = mp.Process(target=receiver[protocol_type],
+                                                args=(self._receiver_queue, self._sender_queue, lose_prob))
         else:
             raise ValueError
 
@@ -181,39 +178,47 @@ class PointToPoint:
     @staticmethod
     def _gbn_sender(self_queue: mp.Queue(), dist_queue: mp.Queue(), args: SenderArgs):
         repeat = False
+        print_str = 'sender:'
         if args.Sn < args.Sm:
             PointToPoint._send(dist_queue, str(args.Sn), args.lose_prob)
             args.Sn += 1
+            print_str += ' send ' + str(args.Sn - 1)
         else:
             try:
                 message_number = self_queue.get(timeout=0.1).split(':')[1]
-                # print('sender: ACK' + message_number)
+                print_str += 'get: ACK' + message_number + ', Sb = ' + str(args.Sb)
                 if int(message_number) == args.Sb:
                     PointToPoint._send(dist_queue, str(args.Sn), args.lose_prob)
                     args.Sn, args.Sb, args.Sm = args.Sn + 1, args.Sb + 1, args.Sm + 1
-                else:
+                elif int(message_number) > args.Sb:
                     repeat = True
             except Empty:
                 repeat = True
 
         if repeat:
             args.Sn = args.Sb
+            print_str += ', repeat: Sn = ' + str(args.Sn)
+
+        if PointToPoint._debug:
+            print(print_str)
 
     @staticmethod
     def _gbn_receiver(self_queue: mp.Queue(), dist_queue: mp.Queue(), lose_prob):
         Rn = 0
         while True:
             message_number = self_queue.get()
-            # print('receiver get ', message_number)
-
+            print_str = 'receiver get ' + message_number
             if Rn == int(message_number):
-                print('receiver received: ', message_number)
+                print_str += ', received'
                 PointToPoint._send(dist_queue, 'ACK:' + str(Rn), lose_prob)
                 Rn += 1
             elif Rn < int(message_number):
                 PointToPoint._send(dist_queue, 'ACK:' + str(Rn - 1), lose_prob)
             else:
                 PointToPoint._send(dist_queue, 'ACK:' + message_number, lose_prob)
+
+            if PointToPoint._debug:
+                print(print_str)
 
 
 if __name__ == '__main__':
