@@ -1,25 +1,32 @@
-import multiprocessing as mp
 import src.connections as con
 import time
 
 
 class Experiment:
     def __init__(
-            self, protocol_type: str,
-            dependency_type: str,
+            self,
+            protocol_type: str,
             window_size=16,
-            lose_probab=0.5,
-            transfer_number=160,
-            seconds=60
+            lose_prob=0.5,
+            transfer_number=-1,
+            seconds=-1
     ):
-        pass
+        self.connection = con.PointToPoint(
+            protocol_type,
+            window_size,
+            lose_prob,
+            transfer_number=transfer_number,
+            seconds=seconds
+        )
 
-    def calc_time(self):
+        self.transfer_number = transfer_number
+
+    def calc_time(self) -> float:
         start_time = time.time()
-
-        pass
+        self.connection.start_transmission()
+        end_time = time.time()
+        return end_time - start_time
 
     def calc_efficiency(self):
-        pass
-
-
+        self.connection.start_transmission()
+        return self.connection.pack_number[0]

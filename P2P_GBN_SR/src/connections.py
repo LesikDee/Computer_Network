@@ -4,9 +4,7 @@ import time
 from collections import deque
 import array
 import random
-random.seed(20)
-
-random.random()
+random.seed(1)
 
 
 class PointToPoint:
@@ -23,6 +21,8 @@ class PointToPoint:
         self._sender_queue = mp.Queue()
         self._receiver_queue = mp.Queue()
 
+        self.pack_number = 0  # number or package that caught for session (used in number mode)
+
         sender = {
             'sr': {
                 'number': self._sr_sender_number,
@@ -33,22 +33,24 @@ class PointToPoint:
                 'time': self._gbn_sender_time
             }
         }
-        receiver ={
+        receiver = {
             'sr': self._sr_receiver,
             'gbn': self._gbn_receiver
         }
 
         if protocol_type != 'gbn' and protocol_type != 'sr':
             raise ValueError
-#sender[protocol_type]['number'] self_queue: mp.Queue(), dist_queue: mp.Queue(), window_size, lose_prob
+
         if transfer_number > 0:
             self._sender_process = mp.Process(target=sender[protocol_type]['number'],
                                               args=(self._sender_queue, self._receiver_queue,
                                                     window_size, lose_prob, transfer_number))
         if seconds > 0:
+            manager = mp.Manager()
+            self.pack_number = manager.dict()
             self._sender_process = mp.Process(target=sender[protocol_type]['time'],
                                               args=(self._sender_queue, self._receiver_queue,
-                                                    window_size, lose_prob, seconds))
+                                                    window_size, lose_prob, seconds, self.pack_number))
         if transfer_number > 0 or seconds > 0:
             self._receiver_process = mp.Process(target=receiver['sr'],
                                                 args=(self._receiver_queue, self._sender_queue, window_size, lose_prob))
@@ -79,13 +81,15 @@ class PointToPoint:
             PointToPoint._sr_sender(sender_queue, receiver_queue, check_deque, args)
 
     @staticmethod
-    def _sr_sender_time(sender_queue, receiver_queue, window_size, lose_prob, work_time):
+    def _sr_sender_time(sender_queue, receiver_queue, window_size, lose_prob, work_time, pack_number):
         args = PointToPoint.SenderArgs(window_size, lose_prob)
         check_deque = deque()
 
         start_time = time.time()
         while time.time() < start_time + work_time:
             PointToPoint._sr_sender(sender_queue, receiver_queue, check_deque, args)
+
+        pack_number[0] = args.Sb
 
     @staticmethod
     def _sr_sender(self_queue, dist_queue, check_deque, args: SenderArgs):
@@ -121,7 +125,9 @@ class PointToPoint:
 
     @staticmethod
     def _send(queue: mp.Queue(), message: str, lose_prob):
-        if random.random() >= lose_prob:
+        r = random.random()
+        # (lose_prob, random.random(), 'yes' if r >= lose_prob else 'no')
+        if r >= lose_prob:
             queue.put(message)
 
     @staticmethod
@@ -163,12 +169,14 @@ class PointToPoint:
             PointToPoint._gbn_sender(sender_queue, receiver_queue, args)
 
     @staticmethod
-    def _gbn_sender_time(sender_queue, receiver_queue, window_size, lose_prob, work_time):
+    def _gbn_sender_time(sender_queue, receiver_queue, window_size, lose_prob, work_time, pack_number):
         args = PointToPoint.SenderArgs(window_size, lose_prob)
 
         start_time = time.time()
         while time.time() < start_time + work_time:
             PointToPoint._gbn_sender(sender_queue, receiver_queue, args)
+
+        pack_number[0] = args.Sb
 
     @staticmethod
     def _gbn_sender(self_queue: mp.Queue(), dist_queue: mp.Queue(), args: SenderArgs):
@@ -179,7 +187,7 @@ class PointToPoint:
         else:
             try:
                 message_number = self_queue.get(timeout=0.1).split(':')[1]
-                print('sender: ACK' + message_number)
+                # print('sender: ACK' + message_number)
                 if int(message_number) == args.Sb:
                     PointToPoint._send(dist_queue, str(args.Sn), args.lose_prob)
                     args.Sn, args.Sb, args.Sm = args.Sn + 1, args.Sb + 1, args.Sm + 1
@@ -192,14 +200,14 @@ class PointToPoint:
             args.Sn = args.Sb
 
     @staticmethod
-    def _gbn_receiver(self_queue: mp.Queue(), dist_queue: mp.Queue(), N: int, lose_prob):
+    def _gbn_receiver(self_queue: mp.Queue(), dist_queue: mp.Queue(), lose_prob):
         Rn = 0
         while True:
             message_number = self_queue.get()
-            #print('receiver get ', message_number)
+            # print('receiver get ', message_number)
 
             if Rn == int(message_number):
-                print('receiver recieved: ', message_number)
+                print('receiver received: ', message_number)
                 PointToPoint._send(dist_queue, 'ACK:' + str(Rn), lose_prob)
                 Rn += 1
             elif Rn < int(message_number):
@@ -209,7 +217,7 @@ class PointToPoint:
 
 
 if __name__ == '__main__':
-    wz = 4
+    ws = 4
     lb = 0.5
-    conn = PointToPoint('gbn', wz, lb, seconds=2)
+    conn = PointToPoint('gbn', ws, lb, seconds=2)
     conn.start_transmission()
