@@ -4,7 +4,7 @@ import time
 from collections import deque
 import array
 import random
-random.seed(1)
+random.seed()
 
 
 class PointToPoint:
@@ -50,7 +50,7 @@ class PointToPoint:
                                                     window_size, lose_prob, seconds, self.pack_number))
         if transfer_number > 0 or seconds > 0:
             self._receiver_process = mp.Process(target=receiver[protocol_type],
-                                                args=(self._receiver_queue, self._sender_queue, lose_prob))
+                                                args=(self._receiver_queue, self._sender_queue, lose_prob, window_size))
         else:
             raise ValueError
 
@@ -62,7 +62,7 @@ class PointToPoint:
         self._receiver_process.terminate()
 
     class SenderArgs:
-        def __init__(self, window_size, lose_prob, Sb = 0):
+        def __init__(self, window_size, lose_prob, Sb=0):
             self.Sn = 0
             self.Sm = window_size
             self.window_size = window_size
@@ -86,15 +86,18 @@ class PointToPoint:
         while time.time() < start_time + work_time:
             PointToPoint._sr_sender(sender_queue, receiver_queue, check_deque, args)
 
-        pack_number[0] = args.Sb
+        pack_number[0] = args.Sn
 
     @staticmethod
     def _sr_sender(self_queue, dist_queue, check_deque, args: SenderArgs):
+        print_str = 'sender:'
         if args.need_check:
             if len(check_deque) == 0:
                 args.need_check = False
                 args.Sn = args.Sm
                 args.Sm = args.Sm + args.window_size
+                if PointToPoint._debug:
+                    print('sender: check_deque is empty, increase Sm = ' + str(args.Sm))
                 return
 
             next_ack_number = check_deque.popleft()
@@ -102,6 +105,7 @@ class PointToPoint:
                 curr_ack = int(self_queue.get(timeout=0.1).split(':')[1])
             except Empty:
                 PointToPoint._send(dist_queue, str(next_ack_number), args.lose_prob)
+                print_str += 'send ' + str(next_ack_number)
                 check_deque.append(next_ack_number)
             else:
                 if curr_ack != next_ack_number:
@@ -111,14 +115,19 @@ class PointToPoint:
                         pass
 
                     PointToPoint._send(dist_queue, str(next_ack_number), args.lose_prob)
+                    print_str += 'send ' + str(next_ack_number)
                     check_deque.append(next_ack_number)
 
         else:
             PointToPoint._send(dist_queue, str(args.Sn), args.lose_prob)
+            print_str += 'send ' + str(args.Sn)
             check_deque.append(args.Sn)
             args.Sn += 1
             if args.Sn == args.Sm:
                 args.need_check = True
+
+        if PointToPoint._debug:
+            print(print_str)
 
     @staticmethod
     def _send(queue: mp.Queue(), message: str, lose_prob):
@@ -128,7 +137,7 @@ class PointToPoint:
             queue.put(message)
 
     @staticmethod
-    def _sr_receiver(self_queue: mp.Queue(), dist_queue: mp.Queue(), window_size, lose_prob):
+    def _sr_receiver(self_queue: mp.Queue(), dist_queue: mp.Queue(), lose_prob, window_size):
         window_i = 0
         Sb, Sm = 0, window_size
         buffer = array.array('i', window_size * [0])
@@ -146,7 +155,8 @@ class PointToPoint:
             if window_i == window_size:
                 window_i = 0
                 Sb, Sm = Sb + window_size, Sm + window_size
-                PointToPoint.print_buffer(buffer)
+                if PointToPoint._debug:
+                    PointToPoint.print_buffer(buffer)
                 PointToPoint._arr_init(buffer)
 
     @staticmethod
@@ -203,7 +213,7 @@ class PointToPoint:
             print(print_str)
 
     @staticmethod
-    def _gbn_receiver(self_queue: mp.Queue(), dist_queue: mp.Queue(), lose_prob):
+    def _gbn_receiver(self_queue: mp.Queue(), dist_queue: mp.Queue(), lose_prob, window_size=1):
         Rn = 0
         while True:
             message_number = self_queue.get()
@@ -224,5 +234,5 @@ class PointToPoint:
 if __name__ == '__main__':
     ws = 4
     lb = 0.5
-    conn = PointToPoint('gbn', ws, lb, seconds=2)
+    conn = PointToPoint('gbn', ws, lb, seconds=20)
     conn.start_transmission()
