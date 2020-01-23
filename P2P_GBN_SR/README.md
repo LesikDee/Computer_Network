@@ -7,8 +7,8 @@ This program imitates transmission between receiver and transmitter (p2p) by GBN
 For receiver and transmitter creates processes (by multiprocessing python library).
 
 Program includes:
-	- GBN and SR ARQ protocols (api) class -- ***PointToPoint***
-	- Test shell file with some tests
+- GBN and SR ARQ protocols (api) class -- ***PointToPoint***
+- Test shell file with some tests
 
 The main class ***PointToPoint*** is in [connections.py](https://github.com/LesikDee/Computer_Network/blob/master/P2P_GBN_SR/src/connections.py) file.
 ***PointToPoint*** contains such constructor, that defines character of transmission:
