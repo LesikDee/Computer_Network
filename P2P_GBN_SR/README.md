@@ -12,20 +12,21 @@ Program includes:
 
 The main class ***PointToPoint*** is in [connections.py](https://github.com/LesikDee/Computer_Network/blob/master/P2P_GBN_SR/src/connections.py) file.
 ***PointToPoint*** contains such constructor, that defines character of transmission:
-	- `protocol_type: str` 'gbn' or 'sr'
-	- `window_size: int` 
-	- `lose_prob: float` probability of lose the packet (as for receiver as for transmitter)
-	- `transfer_number=-1`
-	- `seconds=-1`
+- `protocol_type: str` 'gbn' or 'sr'
+- `window_size: int` 
+- `lose_prob: float` probability of lose the packet (as for receiver as for transmitter)
+- `transfer_number=-1`
+- `seconds=-1`
 
 **Note**: ***one and only one*** of the parameters `transfer_number` and `seconds` must be in the constructor. Presence one of these parameters define the transmission *mode*:
-	-`transfer_number` means that transmission will be until *transfer_number* packets are transmitted
-	-`seconds` means that transmission will be performed for *seconds* seconds
+- `transfer_number` means that transmission will be until *transfer_number* packets are transmitted
+- `seconds` means that transmission will be performed for *seconds* seconds
 
 ## Usage 
 
-To start the transmission one needs to create an instance of ***PointToPoint*** class and call `start_transmission()` method of this class;
-#####Example:
+To start the transmission one needs to create an instance of ***PointToPoint*** class and call `start_transmission()` method of this class
+##### Example:
+
 ```python
 if __name__ == '__main__':
     window_size = 4
