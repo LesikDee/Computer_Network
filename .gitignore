@@ -1,2 +1,7 @@
 P2P_GBN_SR/.idea/*
 P2P_GBN_SR/src/__pycache__/*
+OSPF/.idea/*
+OSPF/src/__pycache__/*
+*.pyc
+*.docx
+*.pdf
