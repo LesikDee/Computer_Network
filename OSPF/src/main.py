@@ -1,18 +1,18 @@
 import pygame
 import time
-from ospf_net import Net
+from src.ospf_net import Net
 
 
 ORANGE = (255, 150, 100)
 
-ws = 480 #  window size
+ws = 480  # window size
 WHITE = (255, 255, 255)
+
 
 def display(net: Net):
     pygame.init()
     sc = pygame.display.set_mode((ws, ws))
     sc.fill(WHITE)
-
 
     while True:
 
@@ -22,7 +22,6 @@ def display(net: Net):
 
         for router in net.routers.values():
             pygame.draw.circle(sc, ORANGE, (int(router.meta.x * ws), int(router.meta.y * ws)), 20)
-
 
         pygame.display.update()
         time.sleep(0.2)

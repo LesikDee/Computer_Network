@@ -1,5 +1,6 @@
-from server import Server
-from router import Router
+from src.server import Server
+from src.router import Router
+
 
 class Net:
     def __init__(self):

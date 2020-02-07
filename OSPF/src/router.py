@@ -1,5 +1,6 @@
 import multiprocessing as mp
 
+
 class MetaRouter:
     def __init__(self, x: float, y: float, max_range: float, id_r: int):
         self.x = x
@@ -8,7 +9,7 @@ class MetaRouter:
         self.id = id_r
 
     def is_in_range(self, x_r2: float, y_r2: float) -> bool:
-        return  (self.x - x_r2) ** 2 + (self.y - y_r2) ** 2 < self.mr ** 2
+        return (self.x - x_r2) ** 2 + (self.y - y_r2) ** 2 < self.mr ** 2
 
 
 class Router:
