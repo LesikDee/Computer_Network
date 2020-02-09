@@ -2,8 +2,8 @@ from typing import Dict, List
 
 
 class Graph:
-    def __init__(self):
-        self.vertices_list: Dict[int, Dict[int, float]] = {}
+    def __init__(self, first_node_id: int):
+        self.vertices_list: Dict[int, Dict[int, float]] = {first_node_id: Dict[int, float]}
 
         # destination vertex id -> neighborhood (with which there is a connection) shorted path vertex id
         self.destination_list: Dict[int, int] = {}
@@ -16,15 +16,15 @@ class Graph:
         # added new vertex to vertices_list
         self.vertices_list[new_vertex_id] = vertex_list
 
-        self.rebuild_track(new_vertex_id)
+        self._rebuild_track(new_vertex_id)
 
-    def rebuild_track(self, start_vertex_id):
-        track_dict = self.dijkstra_tracks(start_vertex_id)
+    def _rebuild_track(self, start_vertex_id):
+        track_dict = self._dijkstra_tracks(start_vertex_id)
         track_dict.pop(start_vertex_id)
         for id_v in track_dict.keys():
             self.destination_list[id_v] = track_dict[id_v][0]
 
-    def dijkstra_tracks(self, start_vertex_id) -> Dict[int, List[int]]:  # returns tracks for each node
+    def _dijkstra_tracks(self, start_vertex_id) -> Dict[int, List[int]]:  # returns tracks for each node
         # initialization
         distance_dict: Dict[int, float] = {}
         track_dict: Dict[int, List[int]] = {}
