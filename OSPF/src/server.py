@@ -10,7 +10,7 @@ class Server:
             self.queue: mp.Queue = router_queue
 
     def __init__(self):
-        self.routers_info: Dict [int, Server.RoutersBase] = {}
+        self.routers_info: Dict[int, Server.RoutersBase] = {}
 
     def turn_on_router(self, router: Router):
         for machine in self.routers_info.values():
