@@ -3,10 +3,11 @@ from typing import Dict, List
 
 class Graph:
     def __init__(self, first_node_id: int):
-        self.vertices_list: Dict[int, Dict[int, float]] = {first_node_id: Dict[int, float]}
+        self.vertices_list: Dict[int, Dict[int, float]] = {first_node_id: {}}
 
         # destination vertex id -> neighborhood (with which there is a connection) shorted path vertex id
         self.destination_list: Dict[int, int] = {}
+        self.base_node_id = first_node_id
 
     def add_vertex(self, new_vertex_id: int, vertex_list: Dict[int, float]):
         # added new vertex to vertices in list
@@ -16,11 +17,11 @@ class Graph:
         # added new vertex to vertices_list
         self.vertices_list[new_vertex_id] = vertex_list
 
-        self._rebuild_track(new_vertex_id)
+        self._rebuild_track()
 
-    def _rebuild_track(self, start_vertex_id):
-        track_dict = self._dijkstra_tracks(start_vertex_id)
-        track_dict.pop(start_vertex_id)
+    def _rebuild_track(self):
+        track_dict = self._dijkstra_tracks(self.base_node_id)
+        track_dict.pop(self.base_node_id)
         for id_v in track_dict.keys():
             self.destination_list[id_v] = track_dict[id_v][0]
 
@@ -29,7 +30,7 @@ class Graph:
         distance_dict: Dict[int, float] = {}
         track_dict: Dict[int, List[int]] = {}
         for id_v in self.vertices_list.keys():
-            distance_dict[id_v] = max
+            distance_dict[id_v] = float("InF")
             track_dict[id_v] = []
         distance_dict[start_vertex_id] = 0
 
@@ -58,4 +59,3 @@ class Graph:
                     track_dict[node].append(node)
 
         return track_dict
-

@@ -1,26 +1,24 @@
-from src.router import Router, RoutersBase
-from typing import Dict
-from src.messages import AddRouterMessage, Message
+from src.router import Router, MetaRouter
+from typing import Dict, List
+from src.messages import AddRouterMessage
+import multiprocessing as mp
+
 
 class Server:
-
-
-    def __init__(self):
-        self.routers_info: Dict[int, RoutersBase] = {}
+    def __init__(self, queues_list: List[mp.Queue]):
+        self.routers_info: Dict[int, MetaRouter] = {}
+        self.queues_list: List[mp.Queue] = queues_list
 
     def turn_on_router(self, router: Router):
         router.start()  # Run the process
 
-        new_router_info = RoutersBase(router.meta, router.queue)
+        new_router_meta = router.meta
 
-        for machine in self.routers_info.values():
-            curr_router: RoutersBase = machine
-            message: Message = AddRouterMessage(new_router_info)
-            curr_router.queue.put(message)
+        message = AddRouterMessage(new_router_meta)
+        for current_router_meta in self.routers_info.values():
+            self.queues_list[current_router_meta.id].put(message)
 
-
-        self.routers_info[router.meta.id] = new_router_info
+        self.routers_info[new_router_meta.id] = new_router_meta
 
     def turn_out_router(self):
         pass
-# if router.meta.is_in_range(curr_router.rm.x, curr_router.rm.y):

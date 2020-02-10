@@ -1,10 +1,12 @@
 from enum import Enum
 
+
 class MessageType(Enum):
     Empty = 0
     Add = 1
     Ping = 2
     ACK = 3
+
 
 class Message:
     def __init__(self):
@@ -13,10 +15,10 @@ class Message:
 
 class AddRouterMessage(Message):
     #from src.router import RoutersBase
-    def __init__(self, router):
+    def __init__(self, router_info):
         super().__init__()
         self.type = MessageType.Add
-        self.router = router
+        self.router_info = router_info
 
 
 class PingMessage(Message):
@@ -29,6 +31,7 @@ class PingMessage(Message):
 
     def mark(self, current_node: int):
         self.previous_node = current_node
+
 
 class ACKMessage(PingMessage):
     #from src.router import RoutersBase
