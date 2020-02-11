@@ -52,7 +52,7 @@ class Router:
         print('router ' + str(this_router_meta.id) + ' runs')
         while True:
             message: Message = this_router_queue.get()
-
+            print('node', this_router_meta.id, message.type)
             if message.type == MessageType.ACK:
                 transit_info: ACKMessage = message
 
@@ -63,7 +63,8 @@ class Router:
 
                 else:  # this node is just a transit node
                     transit_info.mark(this_router_meta.id)
-                    print(transit_info.finish_node)
+                    print('node', this_router_meta.id, 'transits to ', transit_info.finish_node, 'throw',
+                          graph.destination_list[transit_info.finish_node])
                     queue_list[graph.destination_list[transit_info.finish_node]].put(transit_info)
 
             elif message.type == MessageType.Add:
@@ -72,6 +73,8 @@ class Router:
                 Router.add_new_node(nodes, new_node.router_info, queue_list[new_node.router_info.id],
                                     this_router_meta, neighbor_node_queues, graph)
 
+                print('node', this_router_meta.id, 'ack to ', new_node.router_info.id, 'throw',
+                      graph.destination_list[new_node.router_info.id])
                 ack = ACKMessage(this_router_meta.id, new_node.router_info.id, this_router_meta)
                 queue_list[graph.destination_list[new_node.router_info.id]].put(ack)
 

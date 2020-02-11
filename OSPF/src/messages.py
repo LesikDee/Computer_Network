@@ -14,7 +14,6 @@ class Message:
 
 
 class AddRouterMessage(Message):
-    #from src.router import RoutersBase
     def __init__(self, router_info):
         super().__init__()
         self.type = MessageType.Add
@@ -34,7 +33,6 @@ class PingMessage(Message):
 
 
 class ACKMessage(PingMessage):
-    #from src.router import RoutersBase
     def __init__(self, start_node_id: int, finish_node_id: int, router_info):
         super().__init__(start_node_id, finish_node_id)
         self.type = MessageType.ACK
