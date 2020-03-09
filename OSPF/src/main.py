@@ -1,11 +1,15 @@
-import time
 import src.cmd_parser as parser
 import multiprocessing as mp
 from queue import Empty
 from src.actions import *
+import threading, time
+from src.router import RouterStateType
 
 ORANGE = (255, 150, 100)
 WHITE = (255, 255, 255)
+BLUE = (5, 180, 255)
+GREEN = (0, 240, 10)
+BLACK = (0, 0, 0)
 ws = 480  # window size
 
 
@@ -23,17 +27,45 @@ def display(display_queue: mp.Queue):
                 return
 
         try:
-            routers_meta_list: list = display_queue.get(timeout=0.25)
-            print(len(routers_meta_list))
-            for meta in routers_meta_list:
-                pygame.draw.circle(sc, ORANGE, (int(meta.x * ws), int(meta.y * ws)), radius_size)
+            [rml, edge_list]  = display_queue.get(timeout=0.2)  # rml means routers_meta_list
+            #draw lines
+            for edges in edge_list:
+                pygame.draw.line(sc, BLACK, (ws * rml[edges[0]].x, ws * rml[edges[0]].y),
+                                 (ws * rml[edges[1]].x, ws * rml[edges[1]].y)
+                )
+            #draw circles
+            for meta in rml:
+                router_color = ORANGE
+                if meta.state == RouterStateType.FinishNode:
+                    router_color = GREEN
+                elif meta.state == RouterStateType.Transits:
+                    router_color = BLUE
+
+                pygame.draw.circle(sc, router_color, (
+                    int(meta.x * ws),
+                    int(meta.y * ws)),
+                    radius_size
+                )
                 text = font.render(str(meta.id), 1, (180, 0, 0))
-                sc.blit(text, (int(meta.x * (ws -  radius_size // 2)), int(meta.y * (ws -  radius_size // 2))))
+                sc.blit(text, (int(meta.x * ws - radius_size // 3), int(meta.y * ws - radius_size // 2)))
         except Empty:
             pass
 
         pygame.display.update()
 
+key = ''
+read_input = False
+
+def input_thread():
+    global key
+    global read_input
+    lock = threading.Lock()
+    while True:
+        with lock:
+            key = input()
+            read_input = True
+            if key.__eq__('exit'):
+                break
 
 if __name__ == "__main__":
     net = Net()
@@ -41,22 +73,28 @@ if __name__ == "__main__":
     display_process = mp.Process(target=display, args=(display_queue,))
     display_process.start()
     time.sleep(2)
+
+    input_thread = threading.Thread(target=input_thread)
+    input_thread.start()
+
     while True:
-        action: Action = parser.cmd_parse()
-        if action.actionType == ActionType.Exit:
-            break
+        if read_input and key != '':
+            read_input = False
+            action = parser.cmd_parse(key)
+            if action.actionType == ActionType.Exit:
+                break
+            action.start(net)
 
-        print('aaaaa')
-        action.start(net)
-        print('bbbbb')
         routers_meta_list = []
+        net.update_states()
         for router in net.routers.values():
-            routers_meta_list.append(router.meta)
+            routers_meta_list.insert(router.meta.id, router.meta)
 
-        print(action.actionType, routers_meta_list)
+        display_queue.put([routers_meta_list, net.edge_list])
 
-        display_queue.put(routers_meta_list)
+        time.sleep(0.3)
 
     display_process.terminate()
     net.terminate()
+
 

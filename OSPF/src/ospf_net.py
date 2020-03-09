@@ -5,11 +5,14 @@ import multiprocessing as mp
 
 class Net:
     MAX_ROUTERS_COUNT = 15
-    ROUTERS_RANGE = 0.35
+    ROUTERS_RANGE = 0.25
 
     def __init__(self):
 
         self.routers = {}
+        self.routerStates = mp.Array('i', self.MAX_ROUTERS_COUNT)
+        self.edge_list = []
+
         self._curr_id = 0
         self.id_free_list = [True] * self.MAX_ROUTERS_COUNT
         self.queue_list = []
@@ -17,6 +20,8 @@ class Net:
             self.queue_list.append(mp.Queue())
 
         self._server = Server(self.queue_list)
+
+
 
     def add_router(self, x, y):
         free_id = self._find_free_id()
@@ -27,8 +32,12 @@ class Net:
         self._curr_id = free_id
         self.id_free_list[self._curr_id] = False
 
-        new_router = Router(x, y, self.ROUTERS_RANGE, self._curr_id, self.queue_list)
+        # add edge
+        for router_id, router in self.routers.items():
+            if router.meta.range(x, y) < self.ROUTERS_RANGE:
+                self.edge_list.append([router_id, self._curr_id])
 
+        new_router = Router(x, y, self.ROUTERS_RANGE, self._curr_id, self.queue_list, self.routerStates)
         self.routers[self._curr_id] = new_router
 
         self._server.turn_on_router(new_router)
@@ -51,3 +60,7 @@ class Net:
     def terminate(self):
         for router in self.routers.values():
             router.terminate()
+
+    def update_states(self):
+        for router in self.routers.values():
+            router.meta.define_state(self.routerStates[router.meta.id])

@@ -23,7 +23,11 @@ class Graph:
         track_dict = self._dijkstra_tracks(self.base_node_id)
         track_dict.pop(self.base_node_id)
         for id_v in track_dict.keys():
-            self.destination_list[id_v] = track_dict[id_v][0]
+            if track_dict[id_v]:  # not empty
+                new_dist = track_dict[id_v][0]
+            else:
+                new_dist = -1
+            self.destination_list[id_v] = new_dist
 
     def _dijkstra_tracks(self, start_vertex_id) -> Dict[int, List[int]]:  # returns tracks for each node
         # initialization
