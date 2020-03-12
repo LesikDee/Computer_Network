@@ -1,6 +1,6 @@
 from src.router import Router, MetaRouter
 from typing import Dict, List
-from src.messages import AddRouterMessage
+from src.messages import AddRouterMessage, PingMessage
 import multiprocessing as mp
 
 
@@ -19,6 +19,10 @@ class Server:
             self.queues_list[current_router_meta.id].put(message)
 
         self.routers_info[new_router_meta.id] = new_router_meta
+
+    def ping_routers(self, id_start_node: int, id_finish_node: int):
+        message = PingMessage(id_start_node, id_finish_node)
+        self.queues_list[id_start_node].put(message)
 
     def turn_out_router(self):
         pass

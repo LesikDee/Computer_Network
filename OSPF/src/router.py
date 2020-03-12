@@ -98,7 +98,7 @@ class Router:
                                 Router.add_new_node(nodes, transit_info.router_info, queue_list[transit_info.router_info.id],
                                                     this_router_meta, neighbor_node_queues, graph)
 
-                                router_states[this_router_meta.id] = 2  # RouterStateType.FinishNode
+                        router_states[this_router_meta.id] = 2  # RouterStateType.FinishNode
 
                     else:  # this node is just a transit node
                         if not graph.destination_list or graph.destination_list.get(transit_info.finish_node) is None:

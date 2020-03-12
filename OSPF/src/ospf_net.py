@@ -42,6 +42,12 @@ class Net:
 
         self._server.turn_on_router(new_router)
 
+    def ping_routers(self,  id_start_node: int, id_finish_node: int):
+        if not self.id_free_list[id_start_node] and not self.id_free_list[id_finish_node]:
+            self._server.ping_routers(id_start_node, id_finish_node)
+        else:
+            print("Can not ping routers, wrong id")
+
     def delete_router(self):
         pass
 

@@ -20,6 +20,8 @@ def form_action(args):
 
         return scenario_names[args[1]]()
 
+    if name == 'ping':
+        return PingAction(int(args[1]), int(args[2]))
     elif name == 'exit':
         return ExitAction()
 
