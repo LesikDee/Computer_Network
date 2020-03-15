@@ -20,6 +20,7 @@ def display(display_queue: mp.Queue):
     sc.fill(WHITE)
     radius_size = 20
     font = pygame.font.Font(None, 36)
+    display_queue.put('init')
 
     while True:
         for i in pygame.event.get():
@@ -72,7 +73,7 @@ if __name__ == "__main__":
     display_queue = mp.Queue()  # for update display
     display_process = mp.Process(target=display, args=(display_queue,))
     display_process.start()
-    time.sleep(2)
+    display_queue.get()  # waiting for pygame loads in display process
 
     input_thread = threading.Thread(target=input_thread)
     input_thread.start()

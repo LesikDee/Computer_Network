@@ -34,7 +34,7 @@ class Net:
 
         # add edge
         for router_id, router in self.routers.items():
-            if router.meta.range(x, y) < self.ROUTERS_RANGE:
+            if router.meta.range(x, y) <= self.ROUTERS_RANGE:
                 self.edge_list.append([router_id, self._curr_id])
 
         new_router = Router(x, y, self.ROUTERS_RANGE, self._curr_id, self.queue_list, self.routerStates)

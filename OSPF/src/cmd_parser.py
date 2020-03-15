@@ -1,8 +1,5 @@
 from src.actions import *
 
-# scenario circle
-# scenario polygon
-# scenario mill
 def form_action(args):
     name = args[0]
     if name == 'add':

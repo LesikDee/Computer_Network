@@ -71,21 +71,19 @@ class Router:
             except Empty:
                 router_states[this_router_meta.id] = 0  # RouterStateType.Default
             else:
-                print('node', this_router_meta.id, message.type)
-
+                out_str = ''.join(['node ', str(this_router_meta.id),'; ', str(message.type),'; ',])
                 if message.type == MessageType.Add:
                     router_states[this_router_meta.id] = 0  # RouterStateType.Default
                     new_node: AddRouterMessage = message
                     ack_nodes[new_node.router_info.id] = False  # no acknowledgment yet
                     Router.add_new_node(nodes, new_node.router_info, queue_list[new_node.router_info.id],
                                         this_router_meta, neighbor_node_queues, graph)
-
+                    #out_str += str(ack_nodes) + 'gh:  ' + str(graph.destination_list) + ' '
                     for ack_node_id in ack_nodes.keys():
                         if not ack_nodes[ack_node_id] and graph.destination_list[ack_node_id] != -1:
-                            ack_nodes[new_node.router_info.id] = True
-
-                            print('node', this_router_meta.id, 'ack to ', ack_node_id, 'throw',
-                                  graph.destination_list[ack_node_id])
+                            ack_nodes[ack_node_id] = True
+                            out_str += ' '.join(['ack to', str(ack_node_id), 'throw',
+                                                 str(graph.destination_list[ack_node_id]), ': '])
                             ack = ACKMessage(this_router_meta.id, ack_node_id, this_router_meta)
                             queue_list[graph.destination_list[ack_node_id]].put(ack)
 
@@ -97,7 +95,7 @@ class Router:
                                 ack_nodes[transit_info.router_info.id] = True
                                 Router.add_new_node(nodes, transit_info.router_info, queue_list[transit_info.router_info.id],
                                                     this_router_meta, neighbor_node_queues, graph)
-
+                                out_str += ' '.join(['get ack from', str(transit_info.start_node)])
                         router_states[this_router_meta.id] = 2  # RouterStateType.FinishNode
 
                     else:  # this node is just a transit node
@@ -107,9 +105,10 @@ class Router:
                         else:
                             router_states[this_router_meta.id] = 1 # RouterStateType.Transits
                             transit_info.mark(this_router_meta.id)
-                            print('node', this_router_meta.id, 'transits to ', transit_info.finish_node, 'throw',
-                                  graph.destination_list[transit_info.finish_node])
+                            out_str += ' '.join(['transits to', str(transit_info.finish_node), 'throw',
+                                                 str(graph.destination_list[transit_info.finish_node])])
                             queue_list[graph.destination_list[transit_info.finish_node]].put(transit_info)
+                print(out_str)
 
 
     def start(self):
