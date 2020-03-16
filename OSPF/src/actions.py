@@ -54,7 +54,7 @@ class ScenarioCircle(Action):
         for p_count in range(self.POINT_COUNT):
             net.add_router(self.points[p_count][0], self.points[p_count][1])
 
-class ScenarioPolygon(Action):
+class ScenarioMill(Action):
     POINT_COUNT = 5
     def __init__(self):
         super().__init__()
@@ -73,7 +73,7 @@ class ScenarioPolygon(Action):
             net.add_router(self.points[p_count][0], self.points[p_count][1])
 
 
-class ScenarioMill(Action):
+class ScenarioPolygon(Action):
     POINT_COUNT = 7
     def __init__(self):
         super().__init__()
