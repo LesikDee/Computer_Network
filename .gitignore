@@ -5,3 +5,5 @@ OSPF/src/__pycache__/*
 *.pyc
 *.docx
 *.pdf
+*.iml
+*.xml
