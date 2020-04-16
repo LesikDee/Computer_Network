@@ -1,7 +1,8 @@
+from math import cos, sin, fabs, asin
 
 class Point3d:
     def __init__(self, x: float = 0, y: float = 0, z: float = 0):
-        self.x = x
+        self.x: float = x
         self.y = y
         self.z = z
 
@@ -10,6 +11,19 @@ class Point3d:
 
     def __sub__(self, other) -> 'Point3d':
         return Point3d(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    def distance_to_plane(self, plane: 'Triangle') -> float:
+        v = Vector(plane.point_a, self)  # V = A - X
+        d = plane.n.scalar_prod(v)  # d = N * V
+        return d
+
+    def distance_to_point(self, other: 'Point3d') -> float:
+       return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2) ** 0.5
+
+    def distance_to_line(self, point1: 'Point3d', point2: 'Point3d'):
+        square = fabs(Vector(point2, point1).vector_prod(Vector(self, point1)).length())
+        return square / Vector(point2, point1).length()
+
 
 class Vector:
     def __init__(self, point_end: Point3d, point_start: Point3d = Point3d(0, 0, 0)):
@@ -26,7 +40,6 @@ class Vector:
     def scalar_prod(self, b: 'Vector') -> float:
         return self.x * b.x + self.y * b.y + self.z * b.z
 
-
     def vector_prod(self, b: 'Vector') -> 'Vector':
         # right triple vectors
         return Vector(Point3d(
@@ -40,19 +53,75 @@ class Vector:
     def get_point(self) -> Point3d:
         return Point3d(self.x, self.y, self.z)
 
+    def __add__(self, other) -> 'Vector':
+        return Vector(Point3d(self.x + other.x, self.y + other.y, self.z + other.z))
+
     def __mul__(self, constant: float) -> 'Vector':
         return Vector(Point3d(self.x * constant, self.y * constant, self.z * constant))
 
     def __truediv__(self, constant: float) -> 'Vector':
         return Vector(Point3d(self.x / constant, self.y / constant, self.z / constant))
 
+    def projection(self, axe: str):
+        projections = {
+            'x': self.x,
+            'y': self.y,
+            'z': self.z
+        }
+        return projections[axe]
+
+    def length(self) -> float:
+        return (self.x ** 2 + self.y ** 2 + self.z ** 2) ** 0.5
+
+    def rotate(self, m: []):
+        x = self.x * m[0][0] +  self.y * m[0][1] + self.z * m[0][2]
+        y = self.x * m[1][0] + self.y * m[1][1] + self.z * m[1][2]
+        z = self.x * m[2][0] +  self.y * m[2][1] + self.z * m[2][2]
+
+        self.x = x
+        self.y = y
+        self.z = z
 
 class Triangle:
     def __init__(self, point_a, point_b, point_c):
-        self.point_a = point_a
-        self.point_b = point_b
-        self.point_c = point_c
+        self.point_a: Point3d = point_a
+        self.point_b: Point3d = point_b
+        self.point_c: Point3d = point_c
 
+        self.update_normal()
+
+    def update_normal(self):
+        n = Vector(self.point_b, self.point_a).vector_prod(Vector(self.point_c, self.point_a))
+        n.normalize()
+        self.n = n
+
+    def rotate_plane(self, angle: float):
+        v_ab = Vector(self.point_b, self.point_a)
+        v_ac = Vector(self.point_c, self.point_a)
+
+        x = v_ab + v_ac
+        y = v_ab.vector_prod(x )
+        z = x.vector_prod(y)
+        z.normalize()
+        m = self.get_rotate_matrix(z, angle)
+
+        v_ab.rotate(m)
+        v_ac.rotate(m)
+
+        point_b = self.point_a + v_ab
+        point_c = self.point_a + v_ac
+
+        return Triangle(self.point_a, point_b, point_c)
+
+    @staticmethod
+    def get_rotate_matrix(unit_vector: Vector, a: float):
+        x, y, z = unit_vector.x, unit_vector.y, unit_vector.z
+        matrix = [
+            [cos(a) + (1 - cos(a)) * x ** 2, (1 - cos(a)) * x * y - sin(a) * z, (1 - cos(a)) * x * z + sin(a) * y],
+            [(1 - cos(a)) * y * x + sin(a) * z, cos(a) + (1 - cos(a)) * y ** 2, (1 - cos(a)) * y * z - sin(a) * x],
+            [(1 - cos(a)) * z * x - sin(a) * y, (1 - cos(a)) * z * y + sin(a) * x, cos(a) + (1 - cos(a)) * z ** 2],
+        ]
+        return matrix
 
 class Ray:
     def __init__(self, location: Point3d,  direction: Vector):
@@ -69,7 +138,7 @@ class Ray:
         # distance from X to plane
         d = n.scalar_prod(v)  # d = N * V
         # dir projection to N
-        e = v.scalar_prod(self.dir)  #  e = N * (Y - X)
+        e = n.scalar_prod(self.dir)  #  e = N * (Y - X)
 
         if e == 0 or d == 0:
             raise ValueError()
@@ -78,13 +147,20 @@ class Ray:
 
     def reflect_plane(self, plane: Triangle) -> 'Ray':
         o = self.intersect_plane(plane)
-        m = self.startPos + Vector(o, self.startPos)
+        # za = Vector(o, self.startPos)
+        m = self.startPos + Vector(o, self.startPos) * 2
 
         n = Vector(plane.point_b, plane.point_a).vector_prod(Vector(plane.point_c, plane.point_a))
         n.normalize()
         v = Vector(plane.point_a, self.startPos)  # V = A - X
         d = n.scalar_prod(v)  # d = N * V
 
-        m_symm = m + n * 2 * d  # symmetrical point TODO: think, maybe minus
+        m_symm = m - n * 2 * d  # symmetrical point
 
         return Ray(o, Vector(m_symm - o))
+
+
+def get_euler_angle_from_point_plane(plane: Triangle, new_point: Point3d, plane_point: Point3d) -> float:
+    vertical_proj = fabs(Vector(new_point, plane_point).projection('y'))
+    distance_to_rotation_p = new_point.distance_to_point(plane.point_a)
+    return asin(vertical_proj/distance_to_rotation_p)
