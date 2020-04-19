@@ -1,4 +1,27 @@
 from math import cos, sin, fabs, asin
+from enum import Enum
+
+class Angle(Enum):
+    YAW = 1
+    PITCH = 2
+    ROLL = 3
+
+
+class Point2d:
+    def __init__(self, x: float = 0, y: float = 0):
+        self.x: float = x
+        self.y: float = y
+
+
+class Vector2d:
+    def __init__(self, point_end: Point2d, point_start: Point2d = Point2d(0, 0)):
+        self.x = point_end.x - point_start.x
+        self.y = point_end.y - point_start.y
+
+    def pseudo_scalar_prod(self, other: 'Vector2d') -> float:
+        return self.x * other.y - other.x * self.y
+
+
 
 class Point3d:
     def __init__(self, x: float = 0, y: float = 0, z: float = 0):
@@ -24,6 +47,8 @@ class Point3d:
         square = fabs(Vector(point2, point1).vector_prod(Vector(self, point1)).length())
         return square / Vector(point2, point1).length()
 
+    def get_point(self):
+        return self.x, self.y, self.z
 
 class Vector:
     def __init__(self, point_end: Point3d, point_start: Point3d = Point3d(0, 0, 0)):
@@ -95,15 +120,23 @@ class Triangle:
         n.normalize()
         self.n = n
 
-    def rotate_plane(self, angle: float):
+    def rotate_plane(self, angle: float, angle_name: Angle):
         v_ab = Vector(self.point_b, self.point_a)
         v_ac = Vector(self.point_c, self.point_a)
 
         x = v_ab + v_ac
-        y = v_ab.vector_prod(x )
-        z = x.vector_prod(y)
-        z.normalize()
-        m = self.get_rotate_matrix(z, angle)
+        y = v_ab.vector_prod(x)
+
+        if angle_name == Angle.YAW:
+            y.normalize()
+            m = self.get_rotate_matrix(y, angle)
+        elif angle_name == Angle.PITCH:
+            z = x.vector_prod(y)
+            z.normalize()
+            m = self.get_rotate_matrix(z, angle)
+        else:  # angle_name == Angle.ROLL:
+            x.normalize()
+            m = self.get_rotate_matrix(x, angle)
 
         v_ab.rotate(m)
         v_ac.rotate(m)
@@ -123,6 +156,13 @@ class Triangle:
         ]
         return matrix
 
+    def get_points(self):
+        return (
+            (self.point_a.x, self.point_a.y, self.point_a.z),
+            (self.point_b.x, self.point_b.y, self.point_b.z),
+            (self.point_c.x, self.point_c.y, self.point_c.z),
+        )
+
 class Ray:
     def __init__(self, location: Point3d,  direction: Vector):
         self.startPos: Point3d = location
@@ -140,7 +180,7 @@ class Ray:
         # dir projection to N
         e = n.scalar_prod(self.dir)  #  e = N * (Y - X)
 
-        if e == 0 or d == 0:
+        if e == 0:
             raise ValueError()
 
         return self.startPos + (self.dir * d / e)
