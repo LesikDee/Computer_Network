@@ -5,7 +5,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 
 from src.system.periscope import Periscope
-from src.target import Target
+from src.system.target import Target
 
 RED = (1.0, 0., 0.)
 WHITE = (1., 1., 1.)
@@ -75,13 +75,12 @@ def draw_sphere(coords, radius, color_s = BLUE):
 
 class Renderer:
     def __init__(self, periscope: Periscope = None):
-        pygame.init()
         display = (1200, 900)
         pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
 
         gluPerspective(45, (display[0] / display[1]), 0.1, 10.0)
 
-        glTranslatef(-0.5, -0.5, -1)
+        glTranslatef(-0.4, -0.5, -1)
 
         self.periscope: Periscope = periscope
 

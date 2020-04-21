@@ -3,7 +3,9 @@ from src.system.periscope import Periscope
 import pygame
 import src.parser as parser
 from src.render import Renderer
-from src.target import Target
+from src.system.target import Target
+from src.algorithms.direct import DirectAlgorithm
+
 
 def run():
     pygame.init()
@@ -11,20 +13,22 @@ def run():
     periscope = Periscope(config)
     renderer = Renderer(periscope)
 
-    p_target = periscope.ray_to_target().intersect_plane(
+    p_target = periscope.ray_to_aim().intersect_plane(
         Triangle(Point3d(0.2, 0.5, 0.2),
                  Point3d(0.2, 0.4, 0.1),
                  Point3d(0.2, 0.3, 0.5)
                  ))
     tee = Target(p_target, config["target_radius"])
-
+    periscope.set_target(tee)
     iteration = 0
+
+
     while True:
         mirror_down = periscope.mirror_down
         mirror_up = periscope.mirror_up
         p1_intersect = periscope.laser.intersect_plane(mirror_down.triangle)
         p2_intersect = periscope.laser.reflect_plane(mirror_down.triangle).intersect_plane(mirror_up.triangle)
-        p_aim = periscope.ray_to_target().intersect_plane(
+        p_aim = periscope.ray_to_aim().intersect_plane(
             Triangle(Point3d(tee.location.x, 0.5, 0.2),
             Point3d(tee.location.x, 0.4, 0.1),
             Point3d(tee.location.x, 0.3, 0.5)
@@ -49,9 +53,8 @@ def run():
                 elif i.key == pygame.K_KP1:
                     tee.location.z += 0.01
 
-                periscope.correct_planes(tee, iteration)
+                DirectAlgorithm.correct_planes(periscope, iteration)
                 iteration += 1
-
 
 if __name__ == '__main__':
     run()
