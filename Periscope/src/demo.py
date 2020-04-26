@@ -32,7 +32,7 @@ def run():
                     tee.location.x += 0.01
                 elif i.key == pygame.K_LEFT:
                     tee.location.x -= 0.01
-                elif i.key == pygame.K_KP0:
+                elif i.key == pygame.K_KP2:
                     tee.location.z -= 0.01
                 elif i.key == pygame.K_KP1:
                     tee.location.z += 0.01

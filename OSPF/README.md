@@ -34,7 +34,7 @@ On display, router is colored to one of three colors, each color mean the specif
 -	**green:** end node state: message delivered (to this node) 
 
 ## Usage 
-To start the program run next script from root(src) folder:
+To start the program run next script from root(OSPF) folder:
 	`python -m src.main`
 	
 #### Examples

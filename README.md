@@ -15,3 +15,12 @@ Development info:
 * language: *python 3.7*
 * multiprocessing  library: *multiprocessing*
 * graphic  library: *pygame*
+
+### 3. Periscope: Periscope system (laser, two mirrors, target)  
+Periscope system implementation with two different approaches (direct and with neural net)  
+
+Development info:
+* language: *python 3.7*
+* multiprocessing  library: *multiprocessing*
+* graphic  libraries: *pygame*, *pyOpenGL*
+* machine learning  libraries: *tensorflow*, *keras*

@@ -1,29 +1,25 @@
 # Periscope system  
 The periscope system that by independent processes cooperation keeps the target under the gun  
 
-## Statement of the problem:  
-#### General statement of the problem:  
-There is a system in 3d space from a *laser installation*, a periscope (2 *mirrors*), a *target*, and a *server* (*camera*).
-![***Result:***](https://github.com/LesikDee/Computer_Network/blob/master/Periscope/documentation/scheme1.png)
+![***Result:***](https://github.com/LesikDee/Computer_Network/blob/master/Periscope/documentation/periscope.gif)
 
-  
-*Mirrors* and *server* - are modeled by independent processes, where
-- The *server* reads information about surrounding objects (the position of the *target* and the location of the *mirrors* in space) and passes, if necessary, to processes simulated the operation of *mirrors*
-- *Mirrors* can change their position in space, as well as exchange information with each other and the *server*.  
+## Description
+This program imitates the work of the periscope system. The system consist of a *laser installation*, a periscope (2 triangles *mirrors*), a *target*, and a *server* (*camera*).  If the target changes its position - it is needed to mirrors to rotate as that reflected ray strikes to the target. 
+For more details see [statement of the problem.py](https://github.com/LesikDee/Computer_Network/blob/master/Periscope/documentation/ProblemStatement.md)
+   
+There are two input configuration models: *2d* and *3d*. They both are working in 3d space, but in *2d* at start position *laser installation*, *target* and ray are in one plane.  
 
-The vector that sets the *laser* beam does not change during operation, but the *target* can change its location within certain limits, and it is necessary to ensure that the system works in order that the *mirrors* rotate so that the beam hits the *target*.  
-  
-In space, a *mirrors* is a triangle, one of the vertices of which is fixed in space. And around which the triangle can rotate in two directions:  
-![***Result:***](https://github.com/LesikDee/Computer_Network/blob/master/Periscope/documentation/angles.png)
+As it was required - the problem is solved by two approaches: direct and with neural nets. 
 
-  
-#### Detailed statement of the problem:
-  The *target* is a small sphere, and for a unit of time, it cannot shift so much that the beam ceases to intersect with it, provided that the beam is initially directed to the center of the sphere.
-  
-*Mirrors* can always rotate so that the beam can cross the sphere in the center.
+## Usage 
+To start the program run scripts from root(Periscope) folder. There are two scripts: *app* and *demo*. 
+The *app* has two optional arguments:
+- '2d' or '3d' - input configuration file, '2d' by default
+- 'direct' or 'net' - the solve method, 'direct' by default  
 
-Triangles are equilateral.
+For example:	`python -m src.app 3d net`  
 
-It is needed  to solve the problem in two ways:
-- To come up with and implement such an algorithm of actions for interaction/change of position in the space of *mirrors* so that the beam always intersects with the *target*.
-- Using machine learning methods, obtain a model that controls the *mirrors* so that the beam always intersects with the *target*.
+The *demo* script has no arguments, it always runs *2d* configuration with direct algorithm and besides all in one process.
+`python -m src.demo`
+	
+To move the target use keys: *UP*, *DOWN*, *LEFT*, *RIGHT*, *NUM1*, *NUM2*.
