@@ -17,7 +17,7 @@ class Periscope:
         points3_up_tr = config['up_triangle']
         self.mirror_up = Mirror(Triangle(points3_up_tr[0], points3_up_tr[1], points3_up_tr[2]))
 
-        self.target = Target
+        self.target: Target = Target
 
     def set_target(self, target: Target):
         self.target = target

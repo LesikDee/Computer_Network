@@ -61,7 +61,7 @@ class DirectAlgorithm:
         else:
             ray = periscope.laser.reflect_plane(plane_angle_step)
             if not DirectAlgorithm.__check_rotate_relevant(ray, periscope.mirror_up.triangle):
-                return current_plane.rotate_plane(angle * -angle_sign, angle_name)
+                return #current_plane.rotate_plane(angle * -angle_sign, angle_name)
             if not DirectAlgorithm.__check_rotate_relevant(periscope.laser, plane_angle_step):
                 return
 
@@ -73,13 +73,13 @@ class DirectAlgorithm:
             prev_diff = diff
 
             if mirror_loc == MirrorLocation.UP:
-                if not DirectAlgorithm.__check_rotate_relevant(input_ray, plane_angle_step):
+                if not DirectAlgorithm.__check_rotate_relevant(input_ray, new_plane_angle_step):
                     return
             else:
-                ray = periscope.laser.reflect_plane(plane_angle_step)
+                ray = periscope.laser.reflect_plane(new_plane_angle_step)
                 if not DirectAlgorithm.__check_rotate_relevant(ray, periscope.mirror_up.triangle):
-                    return current_plane.rotate_plane(angle * -angle_sign, angle_name)
-                if not DirectAlgorithm.__check_rotate_relevant(periscope.laser, plane_angle_step):
+                    return #current_plane.rotate_plane(angle * -angle_sign, angle_name)
+                if not DirectAlgorithm.__check_rotate_relevant(periscope.laser, new_plane_angle_step):
                     return
 
 

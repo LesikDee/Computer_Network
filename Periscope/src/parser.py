@@ -1,8 +1,13 @@
 import json
 from src.geometry import Point3d, Vector
+from pathlib import Path
+
+def get_project_root() -> Path:
+    """Returns project root folder."""
+    return Path(__file__).parent.parent
 
 def parse(model: str) -> {}:
-    with open('../configs/' + model + '_input.json', 'r') as input_file:
+    with open(str(get_project_root()) + '/configs/' + model + '_input.json', 'r') as input_file:
         data = input_file.read()
 
     configs = json.loads(data)
