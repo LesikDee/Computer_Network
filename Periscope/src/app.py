@@ -170,8 +170,8 @@ if __name__ == '__main__':
     algorithm: SolveAlgorithm = SolveAlgorithm.DIRECT
 
     n = len(sys.argv)
-    if n > 1 and sys.argv[2] == '3d':
-        input_model = '3d'
+    if n > 1:
+        input_model = sys.argv[1]
 
     if n > 2 and sys.argv[2] == 'net':
         algorithm = SolveAlgorithm.NEURAL_NET

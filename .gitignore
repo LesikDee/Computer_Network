@@ -7,3 +7,4 @@ OSPF/src/__pycache__/*
 *.pdf
 *.iml
 *.xml
+*.txt
